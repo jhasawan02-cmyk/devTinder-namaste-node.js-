@@ -1,10 +1,13 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-const mongoDB_link = process.env.mongoDB_link;
+const mongoDB_link = process.env.MONGODB_LINK;
 
 const connectDB = async() =>{
-    await mongoose.connect(mongoDB_link);
+    console.log("Loaded URI:", process.env.MONGODB_LINK);
+    await mongoose.connect((mongoDB_link));
+
+
 };
 
 module.exports = connectDB;
