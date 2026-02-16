@@ -1,24 +1,22 @@
 const express = require("express");
-
 const app = express();
+const connectDB = require("./config/database");
 
 
 
 
-
-app.use("/contact",(req,res) => {
-    res.send("hello from  the server  from contact page page!")
+app.get("/",(req,res)=>{
+    res.send("welcome to the home page of dev tinder");
 });
 
-app.use("/test",(req,res) => {
-    res.send("hello from  the server  from test page!");
-});
+connectDB()
+  .then(() => {
+    console.log("succesfully connected to the dadabase cluster");
 
-// app.use("/", (req,res) => {
-//     res.send("hello from  the server home  page!");
-// }); 
-
-
-app.listen(7777, () => {
-    console.log(`server is running na dlistening from port : 7777`);
-})
+    app.listen(8080, () => {
+      console.log(`server is running and  listening from port : 8080`);
+    });
+  })
+  .catch(() => {
+    console.log("error while connecting with the database cluster");
+  });
