@@ -18,17 +18,29 @@ connectDB()
   });
 
 
-
-app.post("/register",async (req, res) => {
-   const user =  new User(req.body);
+//post API for user registration
+app.post("/signup",async (req, res) => {
+   const addUser =  new User(req.body);
 
     try{
-    await user.save();
+    await addUser.save();
     res.send({"message":"user registered successfully"});
     }catch(err){
         res.status(404).send({"message":"error while registering the user"});
     }
-})
+});
+
+
+//get API for fetching  all users
+app.get("/feed", async (req, res) => {
+  try{
+    const users = await User.find({});
+    res.send(users);
+  }
+  catch(err) {
+    res.status(404).send("feed not found");
+  }
+});
 
 
 
