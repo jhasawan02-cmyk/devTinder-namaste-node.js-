@@ -17,30 +17,40 @@ connectDB()
     console.log(err);
   });
 
-
 //post API for user registration
-app.post("/signup",async (req, res) => {
-   const addUser =  new User(req.body);
+app.post("/signup", async (req, res) => {
+  const addUser = new User(req.body);
 
-    try{
+  try {
     await addUser.save();
-    res.send({"message":"user registered successfully"});
-    }catch(err){
-        res.status(404).send({"message":"error while registering the user"});
-    }
+    res.send({ message: "user registered successfully" });
+  } catch (err) {
+    res.status(404).send({ message: "error while registering the user" });
+  }
 });
-
 
 //get API for fetching  all users
 app.get("/feed", async (req, res) => {
-  try{
-    const users = await User.find({});
-    res.send(users);
-  }
-  catch(err) {
+  try {
+    const feed = await User.find({});
+    res.send(feed);
+  } catch (err) {
     res.status(404).send("feed not found");
   }
 });
 
-
-
+  //get API for fetching user by email
+  app.get("/user", async (req, res) => {
+    const userEmail = req.body.email;
+    try {
+      console.log(userEmail);
+      const userExtract = await User.findOne({email:userEmail});
+      if (!userExtract) {
+        res.status(404).send("user not found");
+      } else {
+        res.send(userExtract);
+      }
+    } catch (err) {
+      res.send("something went wrong while fetching the user details");
+    }
+  });
