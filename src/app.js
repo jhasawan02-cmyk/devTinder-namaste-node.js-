@@ -55,11 +55,11 @@ app.get("/feed", async (req, res) => {
     }
   });
 
-//delete API for deleting user bby email
+//delete API for deleting user by id
 app.delete("/delete", async(req,res) => {
-  const userEmail = req.body.email;
+  const userId = req.body.id;
   try {
-    const deleteUser  = await User.findOneAndDelete({email:userEmail});
+    const deleteUser  = await User.findOneAndDelete({_id:userId});
     if(!deleteUser){
       res.status(404).send("user not found");
     }else{
@@ -68,4 +68,6 @@ app.delete("/delete", async(req,res) => {
   } catch(err){
     res.send("something went wrong while deleting the user");
   }
-})
+});
+
+
