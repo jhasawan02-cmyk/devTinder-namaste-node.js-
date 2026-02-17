@@ -39,7 +39,7 @@ app.get("/feed", async (req, res) => {
   }
 });
 
-  //get API for fetching user by email
+//get API for fetching user by email
   app.get("/user", async (req, res) => {
     const userEmail = req.body.email;
     try {
@@ -54,3 +54,18 @@ app.get("/feed", async (req, res) => {
       res.send("something went wrong while fetching the user details");
     }
   });
+
+//delete API for deleting user bby email
+app.delete("/delete", async(req,res) => {
+  const userEmail = req.body.email;
+  try {
+    const deleteUser  = await User.findOneAndDelete({email:userEmail});
+    if(!deleteUser){
+      res.status(404).send("user not found");
+    }else{
+      res.send({message:"user deleted successfully"});
+    }
+  } catch(err){
+    res.send("something went wrong while deleting the user");
+  }
+})
