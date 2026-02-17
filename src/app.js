@@ -91,3 +91,24 @@ app.put("/update", async (req, res) => {
       .send("something went wrong while updating the user details");
   }
 });
+
+//Api to patch the user details via email using "findOneAndReplace"
+app.patch('/patch', async(req,res) => {
+  const useremail = req.body.email;
+
+  try{
+    if(!useremail){
+      res.send("need correct user email to correct/update the individual data")
+    }else{
+      const patchUser  = await User.findOneAndUpdate(
+        {email : useremail},
+        {age: req.body.age},
+        {new:true}
+      );
+      res.send("user age updated");
+    }
+  }
+  catch(err){
+    res.status(404).send("something went wrong while updating the user age");
+  }
+})
