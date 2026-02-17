@@ -20,14 +20,7 @@ connectDB()
 
 
 app.post("/register",async (req, res) => {
-   const user =  new User({
-        firstName:"sachin",
-        lastName: "tendulkar",
-        gender: "male",
-        password: "sachin@123",
-        email: "sachin@tendulkar@gmail.com",
-        age: 55,
-    });
+   const user =  new User(req.body);
 
     try{
     await user.save();
