@@ -3,6 +3,28 @@ const app = express();
 const connectDB = require("./config/database");
 const User = require("./models/user");
 app.use(express.json());
+const validator = require("validator");
+
+// Validator function
+const validateSignup = (req, res) => {
+  const { email, password, photoUrl } = req.body;
+
+  if (!email || !validator.isEmail(email)) {
+    return res.status(400).send({ message: "Invalid email address" });
+  }
+
+  if (!password || !validator.isStrongPassword(password)) {
+    return res
+      .status(400)
+      .send({ message: "Invalid password - must be strong" });
+  }
+
+  if (!photoUrl || !validator.isURL(photoUrl)) {
+    return res.status(400).send({ message: "Invalid photo URL" });
+  }
+
+  return true;
+};
 
 connectDB()
   .then(() => {
@@ -19,13 +41,23 @@ connectDB()
 
 //post API for user registration
 app.post("/signup", async (req, res) => {
+  // Validate email, password, and photoUrl
+  if (!validateSignup(req, res)) {
+    return;
+  }
+
   const addUser = new User(req.body);
 
   try {
     await addUser.save();
     res.send({ message: "user registered successfully" });
   } catch (err) {
-    res.status(400).send({ message: "error while registering the user" });
+    res
+      .status(400)
+      .send({
+        message: "error while registering the user",
+        error: err.message,
+      });
   }
 });
 
@@ -51,7 +83,9 @@ app.get("/userData", async (req, res) => {
       res.send(userExtract);
     }
   } catch (err) {
-    res.status(500).send("something went wrong while fetching the user details");
+    res
+      .status(500)
+      .send("something went wrong while fetching the user details");
   }
 });
 
@@ -73,40 +107,50 @@ app.delete("/delete", async (req, res) => {
 //APi to update the user data
 app.patch("/user/:userId", async (req, res) => {
   const userId = req.params?.userId;
-  const data  = req.body;
+  const data = req.body;
 
-  const ALLOWED_UPDATES = ["age","password","skills","about","firstName","lastName","gender","photoUrl"]
+  const ALLOWED_UPDATES = [
+    "age",
+    "password",
+    "skills",
+    "about",
+    "firstName",
+    "lastName",
+    "gender",
+    "photoUrl",
+  ];
 
   try {
-    const isUpdateAllowed = Object.keys(data).every((k) => 
-      ALLOWED_UPDATES.includes(k)
+    const isUpdateAllowed = Object.keys(data).every((k) =>
+      ALLOWED_UPDATES.includes(k),
     );
 
-    if(!isUpdateAllowed){
-      res.status(400).send("update not allowed");
+    if (!isUpdateAllowed || data.skills.length > 4) {
+      res.status(400).send("update not allowed(max.4 skills)");
       return;
     }
-    if(data.skills.length > 3){throw new err("max 3 skills allowed");}
 
     if (!userId) {
       res.status(400).send("need correct user id to update the user details");
     } else {
-      const updateduser = await User.findOneAndUpdate(
-        { _id: userId },
-        data,
-        { new: true, runValidators: true },
-      );
+      const updateduser = await User.findOneAndUpdate({ _id: userId }, data, {
+        new: true,
+        runValidators: true,
+      });
       if (!updateduser) {
         res.status(404).send("user not found");
       } else {
-        res.send({ message: "user details updated successfully", user: updateduser });
+        res.send({
+          message: "user details updated successfully",
+          user: updateduser,
+        });
       }
     }
   } catch (err) {
     res
       .status(500)
-      .send("something went wrong while updating the user details: " + err.message);
+      .send(
+        "something went wrong while updating the user details: " + err.message,
+      );
   }
 });
-
-
