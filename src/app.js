@@ -2,7 +2,6 @@ const express = require("express");
 const app = express();
 const connectDB = require("./config/database");
 const User = require("./models/user");
-const { SchemaTypeOptions } = require("mongoose");
 app.use(express.json());
 
 connectDB()
@@ -26,7 +25,7 @@ app.post("/signup", async (req, res) => {
     await addUser.save();
     res.send({ message: "user registered successfully" });
   } catch (err) {
-    res.status(404).send({ message: "error while registering the user" });
+    res.status(400).send({ message: "error while registering the user" });
   }
 });
 
@@ -36,13 +35,13 @@ app.get("/feed", async (req, res) => {
     const feed = await User.find({});
     res.send(feed);
   } catch (err) {
-    res.status(404).send("feed not found");
+    res.status(500).send("feed not found");
   }
 });
 
 //get API for fetching user by email
-app.get("/user", async (req, res) => {
-  const userEmail = req.body.email;
+app.get("/userData", async (req, res) => {
+  const userEmail = req.query.email;
   try {
     console.log(userEmail);
     const userExtract = await User.findOne({ email: userEmail });
@@ -52,7 +51,7 @@ app.get("/user", async (req, res) => {
       res.send(userExtract);
     }
   } catch (err) {
-    res.send("something went wrong while fetching the user details");
+    res.status(500).send("something went wrong while fetching the user details");
   }
 });
 
@@ -67,7 +66,7 @@ app.delete("/delete", async (req, res) => {
       res.send({ message: "user deleted successfully" });
     }
   } catch (err) {
-    res.send("something went wrong while deleting the user");
+    res.status(500).send("something went wrong while deleting the user");
   }
 });
 
@@ -83,7 +82,11 @@ app.put("/update", async (req, res) => {
         req.body,
         { new: true },
       );
-      res.send("user details updated successfully");
+      if (!updateduser) {
+        res.status(404).send("user not found");
+      } else {
+        res.send({ message: "user details updated successfully", user: updateduser });
+      }
     }
   } catch (err) {
     res
@@ -93,7 +96,7 @@ app.put("/update", async (req, res) => {
 });
 
 //Api to patch the user details via email using "findOneAndReplace"
-app.patch('/patch', async(req,res) => {
+app.patch('/user', async(req,res) => {
   const useremail = req.body.email;
 
   try{
@@ -103,12 +106,17 @@ app.patch('/patch', async(req,res) => {
       const patchUser  = await User.findOneAndUpdate(
         {email : useremail},
         {age: req.body.age},
-        {new:true}
+        {skills:req.body.skills,password:req.body.passwo,about:req.body.about},
+        {new:true, runValidators:true},
       );
-      res.send("user age updated");
+      if (!patchUser) {
+        res.status(404).send("user not found");
+      } else {
+        res.send({ message: "user data updated", user: patchUser });
+      }
     }
   }
   catch(err){
-    res.status(404).send("something went wrong while updating the user age");
+    res.status(500).send("update failed: " + err.message);
   }
-})
+});
