@@ -71,17 +71,29 @@ app.delete("/delete", async (req, res) => {
 });
 
 //APi to update the user data
-app.put("/update", async (req, res) => {
-  const userId = req.body.userId;
+app.patch("/user", async (req, res) => {
+  const userId = req.params?.userId;
   const data  = req.body;
+
+  const ALLOWED_UPDATES = ["age","password","skills","about","firstName","lastName","gender"]
+
   try {
+    const isUpdateAllowed = Object.keys(data).every((k) => 
+      ALLOWED_UPDATES.includes(k)
+    );
+
+    if(!isUpdateAllowed){
+      res.status(400).send("update not allowed");
+      return;
+    }
+
     if (!userId) {
-      res.status(400).send("need correct user email to update the user details");
+      res.status(400).send("need correct user id to update the user details");
     } else {
       const updateduser = await User.findOneAndUpdate(
         { _id: userId },
-        req.body,
-        { new: true },
+        data,
+        { new: true, runValidators: true },
       );
       if (!updateduser) {
         res.status(404).send("user not found");
@@ -92,32 +104,8 @@ app.put("/update", async (req, res) => {
   } catch (err) {
     res
       .status(500)
-      .send("something went wrong while updating the user details");
+      .send("something went wrong while updating the user details: " + err.message);
   }
 });
 
-//Api to patch the user details via email using "findOneAndReplace"
-app.patch('/user', async(req,res) => {
-  const userId = req.body.id;
 
-  try{
-    if(!userId){
-      res.status(400).send("need correct user id to correct/update the individual data")
-    }else{
-      const { id, ...updateData } = req.body;
-      const patchUser  = await User.findOneAndUpdate(
-        {_id : userId},
-        updateData,
-        {new:true, runValidators:true},
-      );
-      if (!patchUser) {
-        res.status(404).send("user not found");
-      } else {
-        res.send({ message: "user updated successfully", user: patchUser });
-      }
-    }
-  }
-  catch(err){
-    res.status(500).send("update failed: " + err.message);
-  }
-});
