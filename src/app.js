@@ -72,13 +72,14 @@ app.delete("/delete", async (req, res) => {
 
 //APi to update the user data
 app.put("/update", async (req, res) => {
-  const useremail = req.body.email;
+  const userId = req.body.userId;
+  const data  = req.body;
   try {
-    if (!useremail) {
+    if (!userId) {
       res.status(400).send("need correct user email to update the user details");
     } else {
       const updateduser = await User.findOneAndUpdate(
-        { email: useremail },
+        { _id: userId },
         req.body,
         { new: true },
       );
