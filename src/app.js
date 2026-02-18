@@ -75,7 +75,7 @@ app.put("/update", async (req, res) => {
   const useremail = req.body.email;
   try {
     if (!useremail) {
-      res.send("need correct user email to update the user details");
+      res.status(400).send("need correct user email to update the user details");
     } else {
       const updateduser = await User.findOneAndUpdate(
         { email: useremail },
@@ -90,29 +90,29 @@ app.put("/update", async (req, res) => {
     }
   } catch (err) {
     res
-      .status(404)
+      .status(500)
       .send("something went wrong while updating the user details");
   }
 });
 
 //Api to patch the user details via email using "findOneAndReplace"
 app.patch('/user', async(req,res) => {
-  const useremail = req.body.email;
+  const userId = req.body.id;
 
   try{
-    if(!useremail){
-      res.send("need correct user email to correct/update the individual data")
+    if(!userId){
+      res.status(400).send("need correct user id to correct/update the individual data")
     }else{
+      const { id, ...updateData } = req.body;
       const patchUser  = await User.findOneAndUpdate(
-        {email : useremail},
-        {age: req.body.age},
-        {skills:req.body.skills,password:req.body.passwo,about:req.body.about},
+        {_id : userId},
+        updateData,
         {new:true, runValidators:true},
       );
       if (!patchUser) {
         res.status(404).send("user not found");
       } else {
-        res.send({ message: "user data updated", user: patchUser });
+        res.send({ message: "user updated successfully", user: patchUser });
       }
     }
   }
