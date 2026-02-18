@@ -71,11 +71,11 @@ app.delete("/delete", async (req, res) => {
 });
 
 //APi to update the user data
-app.patch("/user", async (req, res) => {
+app.patch("/user/:userId", async (req, res) => {
   const userId = req.params?.userId;
   const data  = req.body;
 
-  const ALLOWED_UPDATES = ["age","password","skills","about","firstName","lastName","gender"]
+  const ALLOWED_UPDATES = ["age","password","skills","about","firstName","lastName","gender","photoUrl"]
 
   try {
     const isUpdateAllowed = Object.keys(data).every((k) => 
