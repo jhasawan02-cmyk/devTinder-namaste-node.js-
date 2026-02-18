@@ -86,6 +86,7 @@ app.patch("/user/:userId", async (req, res) => {
       res.status(400).send("update not allowed");
       return;
     }
+    if(data.skills.length > 3){throw new err("max 3 skills allowed");}
 
     if (!userId) {
       res.status(400).send("need correct user id to update the user details");
