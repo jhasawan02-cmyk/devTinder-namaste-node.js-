@@ -5,6 +5,7 @@ const User = require("./models/user");
 app.use(express.json());
 const validator = require("validator");
 const { validateSignup } = require("./utils/validators");
+const bcrypt = require("bcrypt");
 
 
 connectDB()
@@ -27,7 +28,16 @@ app.post("/signup", async (req, res) => {
     return;
   }
 
-  const addUser = new User(req.body);
+  const{email, firstName, lastName,password,age,gender, skills, about , photoUrl} = req.body
+ 
+  //encrypting user password
+  const PasswordHash = await bcrypt.hash(password,10)
+
+//adding encrypted password into DB
+   const addUser = new User({
+    age,gender, skills, about , photoUrl, email,firstName,lastName,password:PasswordHash,
+   });
+
 
   try {
     await addUser.save();
