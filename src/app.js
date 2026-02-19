@@ -4,8 +4,9 @@ const connectDB = require("./config/database");
 const User = require("./models/user");
 app.use(express.json());
 const validator = require("validator");
-const { validateSignup } = require("./utils/validators");
+const { validateSignup, validateLogin } = require("./utils/validators");
 const bcrypt = require("bcrypt");
+
 
 
 connectDB()
@@ -26,12 +27,12 @@ app.post("/signup", async (req, res) => {
   // Validate email, password, and photoUrl
   if (!validateSignup(req, res)) {
     return;
-  }
+  };
 
-  const{email, firstName, lastName,password,age,gender, skills, about , photoUrl} = req.body
+  const {email, firstName, lastName, password, age, gender, skills, about, photoUrl} = req.body;
  
   //encrypting user password
-  const PasswordHash = await bcrypt.hash(password,10)
+  const PasswordHash = await bcrypt.hash(password, 10);;
 
 //adding encrypted password into DB
    const addUser = new User({
@@ -154,3 +155,28 @@ app.patch("/user/:userId", async (req, res) => {
       );
   }
 });
+
+//login api
+app.post("/login" , async (req,res )=> {
+  try{
+    const {email, password} = req.body;
+    if(!validateLogin(req, res)){
+      return;
+    }
+    const checkEmail = await User.findOne({email: email});
+    if(!checkEmail){
+      return res.status(400).send("Invalid credentials");
+    }
+    const isPasswordValid = await bcrypt.compare(password, checkEmail.password);
+
+    if(isPasswordValid){
+      res.send("login succesful")
+    }else{
+      res.status(404).send("Invalid credentials");
+    }
+
+
+  } catch(err){
+    res.status(400).send("login failed"+err.message);
+  }
+})

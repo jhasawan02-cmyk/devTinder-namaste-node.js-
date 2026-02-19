@@ -21,6 +21,23 @@ const validateSignup = (req, res) => {
   return true;
 };
 
+const validateLogin = (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !validator.isEmail(email)) {
+    return res.status(400).send({ message: "Invalid credentials" });
+  }
+
+  if (!password || !validator.isStrongPassword(password)) {
+    return res
+      .status(400)
+      .send({ message: "Invalid credentials" });
+  }
+
+  return true;
+};
+
 module.exports = {
-                     validateSignup
+  validateSignup,
+  validateLogin
                   };
