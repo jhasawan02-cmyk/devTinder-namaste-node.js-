@@ -4,27 +4,8 @@ const connectDB = require("./config/database");
 const User = require("./models/user");
 app.use(express.json());
 const validator = require("validator");
+const { validateSignup } = require("./utils/validators");
 
-// Validator function
-const validateSignup = (req, res) => {
-  const { email, password, photoUrl } = req.body;
-
-  if (!email || !validator.isEmail(email)) {
-    return res.status(400).send({ message: "Invalid email address" });
-  }
-
-  if (!password || !validator.isStrongPassword(password)) {
-    return res
-      .status(400)
-      .send({ message: "Invalid password - must be strong" });
-  }
-
-  if (!photoUrl || !validator.isURL(photoUrl)) {
-    return res.status(400).send({ message: "Invalid photo URL" });
-  }
-
-  return true;
-};
 
 connectDB()
   .then(() => {
@@ -52,12 +33,21 @@ app.post("/signup", async (req, res) => {
     await addUser.save();
     res.send({ message: "user registered successfully" });
   } catch (err) {
-    res
-      .status(400)
-      .send({
-        message: "error while registering the user",
-        error: err.message,
-      });
+    if (err.code === 11000) {
+      res
+        .status(400)
+        .send({
+          message: "Email already exists",
+          error: "This email is already registered",
+        });
+    } else {
+      res
+        .status(400)
+        .send({
+          message: "error while registering the user",
+          error: err.message,
+        });
+    }
   }
 });
 
